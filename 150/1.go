@@ -329,28 +329,77 @@ func reverseWords(s string) string {
 	return strings.Join(sArray, " ")
 }
 
-// type ResultIterator interface {
-// // Begin resets the cursor of the iterator and returns the first entity.
-// 	open(SearchRequest sr) error
+func convert(s string, numRows int) string {
+	if numRows == 1 {
+		return s
+	}
+	index := make([]string, numRows)
+	down, up := 0, 1
 
-// // Next returns the next Row.
-// 	Next() Result, error
+	d := down // down
+	r := 0
+	for _, c := range s {
+		if r == numRows {
+			d = up
+			r -= 2
+		}
+		if r < 0 {
+			d = down
+			r += 2
+		}
+		index[r] += string(c)
+		if d == down {
+			r++
+		} else {
+			r--
+		}
+	}
+	b := strings.Builder{}
+	for _, v := range index {
+		b.WriteString(v)
+	}
+	return b.String()
+}
 
-// // Is their a next
-//     HasNext() bool
+func kmpGetNext(s []byte) []int {
+	n := len(s)
+	next := make([]int, n)
+	for i, j := 2, 0; i < len(s); i++ {
+		for j > 0 && s[j+1] != s[i] {
+			j = next[j]
+		}
+		if s[i] == s[j+1] {
+			j++
+		}
+		next[i] = j
+	}
+	return next
+}
+func str2bytes(s string) []byte {
+	n := len(s)
+	sb := make([]byte, 1, n+1)
+	sb = append(sb, []byte(s)...)
+	return sb
+}
 
-// // Close the iterator
-// 	Close()
-// }
-// func test(){
+func kmp(s, p string) int{
+	sb, pb := str2bytes(s), str2bytes(p)
+	next := kmpGetNext(pb)
 
-// var searchRequest sr
-// err := iterator.open(sr)
-// defer iterator.close()
-// if err != nil
-// return err
-// while iterator.hasNext()
-// entity, err := iterator.Next()
-// if err != nil
-// return err
-// }
+	for i, j := 1, 0; i < len(sb); i++ {
+		for j > 0 && sb[i] != pb[j+1] {
+			j = next[j]
+		}
+		if sb[i] == pb[j + 1]{
+			j++
+		}
+		if j == len(p) {
+			return i - len(p) 
+		}
+	}
+	return -1
+}
+
+func strStr(haystack string, needle string) int {
+	return kmp(haystack, needle)
+}
