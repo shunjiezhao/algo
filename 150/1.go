@@ -382,7 +382,7 @@ func str2bytes(s string) []byte {
 	return sb
 }
 
-func kmp(s, p string) int{
+func kmp(s, p string) int {
 	sb, pb := str2bytes(s), str2bytes(p)
 	next := kmpGetNext(pb)
 
@@ -390,11 +390,11 @@ func kmp(s, p string) int{
 		for j > 0 && sb[i] != pb[j+1] {
 			j = next[j]
 		}
-		if sb[i] == pb[j + 1]{
+		if sb[i] == pb[j+1] {
 			j++
 		}
 		if j == len(p) {
-			return i - len(p) 
+			return i - len(p)
 		}
 	}
 	return -1
@@ -402,4 +402,30 @@ func kmp(s, p string) int{
 
 func strStr(haystack string, needle string) int {
 	return kmp(haystack, needle)
+}
+
+func maxArea(height []int) int {
+	var ans int // min(height[l], height[r]) * (r - l)
+	max := func(a, b int) int {
+		if a > b {
+			return a
+		}
+		return b
+	}
+
+	min := func(a, b int) int {
+		return -max(-a, -b)
+	}
+
+	n := len(height)
+	for i, j := 0, n-1; i < j; {
+		ans = max(ans, min(height[i], height[j])* (j - i))
+		if height[i] < height[j]{
+			i++
+		}else{
+			j--
+		}
+	}
+	return ans
+
 }
