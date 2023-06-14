@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
-	"strconv"
 )
 
 // isValidSudoku: https://leetcode.cn/problems/valid-sudoku/submissions/438938668/
@@ -93,6 +91,7 @@ func solveSudoku(board [][]byte) {
 	dfs(0)
 }
 
+
 func spiralOrder(matrix [][]int) []int {
 	n, m := len(matrix), len(matrix[0])
 	ans := make([]int, 0)
@@ -116,17 +115,17 @@ func spiralOrder(matrix [][]int) []int {
 	colBegin, colEnd := 0, m
 	inc = &j
 	ans = append(ans, matrix[0][0])
-	for len(ans) != n*m {
+	for len(ans) != n * m {
 		switch {
 		case i == rowBegin && j == colEnd:
 			inc, desc = &i, nil
 			j--
 			rowBegin++
-		case i == rowEnd && j == colEnd-1:
+		case i == rowEnd && j == colEnd - 1:
 			inc, desc = nil, &j
 			i--
 			colEnd--
-		case i == rowEnd-1 && j < colBegin:
+		case i == rowEnd - 1 && j < colBegin:
 			inc, desc = nil, &i
 			j++
 			rowEnd--
@@ -136,7 +135,7 @@ func spiralOrder(matrix [][]int) []int {
 			colBegin++
 		}
 		update()
-		if i >= rowBegin && j >= colBegin && i < rowEnd && j < colEnd {
+			if i >= rowBegin && j >= colBegin && i < rowEnd && j < colEnd {
 			ans = append(ans, matrix[i][j])
 		}
 	}
@@ -149,6 +148,7 @@ func rotate(matrix [][]int) {
 	for i := 0; i < n/2; i++ {
 		for j := 0; j < (n+1)/2; j++ {
 			t := matrix[i][j]
+			// new_[i][j] = old [n - j - 1][i]
 			matrix[i][j] = matrix[n-j-1][i]
 			matrix[n-j-1][i] = matrix[n-i-1][n-j-1]
 			matrix[n-i-1][n-j-1] = matrix[j][n-i-1]
