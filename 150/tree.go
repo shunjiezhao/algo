@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"image/gif"
+	"math"
+)
 
 type TreeNode struct {
 	Val   int
@@ -392,4 +395,202 @@ func (this *BSTIterator) Next() int {
 func (this *BSTIterator) HasNext() bool {
 	return !(this.cur == nil && len(this.stk) == 0)
 
+}
+
+func rightSideView(root *TreeNode) []int {
+	if root == nil {
+		return nil
+	}
+	type pair struct {
+		depth int
+		node  *TreeNode
+	}
+	var queue []pair
+	queue = append(queue, pair{0, root})
+	var ans []int
+	for len(queue) != 0 {
+		h := queue[0]
+		queue = queue[1:]
+		if h.node == nil {
+			continue
+		}
+		if h.depth == len(ans) {
+			ans = append(ans, h.node.Val)
+		} else {
+			ans[h.depth] = h.node.Val
+		}
+		queue = append(queue, pair{h.depth + 1, h.node.Left})
+		queue = append(queue, pair{h.depth + 1, h.node.Right})
+	}
+	return ans
+}
+
+func averageOfLevels(root *TreeNode) []float64 {
+	if root == nil {
+		return nil
+	}
+	type pair struct {
+		depth int
+		node  *TreeNode
+	}
+	var queue []pair
+	queue = append(queue, pair{0, root})
+	var ans []float64
+	var cnt float64
+	for len(queue) != 0 {
+		h := queue[0]
+		queue = queue[1:]
+		if h.node == nil {
+			continue
+		}
+		if h.depth == len(ans) {
+			if len(ans) != 0 {
+				ans[len(ans)-1] /= float64(cnt)
+
+			}
+			ans = append(ans, float64(h.node.Val))
+			cnt = 1
+		} else {
+			cnt++
+			ans[h.depth] += float64(h.node.Val)
+		}
+		queue = append(queue, pair{h.depth + 1, h.node.Left})
+		queue = append(queue, pair{h.depth + 1, h.node.Right})
+	}
+	ans[len(ans)-1] /= cnt
+	return ans
+}
+
+func levelOrder(root *TreeNode) [][]int {
+	if root == nil {
+		return nil
+	}
+	type pair struct {
+		depth int
+		node  *TreeNode
+	}
+	var queue []pair
+	queue = append(queue, pair{0, root})
+	var ans [][]int
+	for len(queue) != 0 {
+		h := queue[0]
+		queue = queue[1:]
+		if h.node == nil {
+			continue
+		}
+		if h.depth == len(ans) {
+			ans = append(ans, []int{h.node.Val})
+		} else {
+			ans[h.depth] = append(ans[h.depth], h.node.Val)
+		}
+		queue = append(queue, pair{h.depth + 1, h.node.Left})
+		queue = append(queue, pair{h.depth + 1, h.node.Right})
+	}
+	return ans
+}
+
+func zigzagLevelOrder(root *TreeNode) [][]int {
+	if root == nil {
+		return nil
+	}
+	type pair struct {
+		depth int
+		node  *TreeNode
+	}
+	var queue []pair
+	queue = append(queue, pair{0, root})
+	var ans [][]int
+	for len(queue) != 0 {
+		h := queue[0]
+		queue = queue[1:]
+		if h.node == nil {
+			continue
+		}
+		if h.depth == len(ans) {
+			ans = append(ans, []int{h.node.Val})
+		} else {
+			ans[h.depth] = append(ans[h.depth], h.node.Val)
+		}
+		queue = append(queue, pair{h.depth + 1, h.node.Left})
+		queue = append(queue, pair{h.depth + 1, h.node.Right})
+	}
+	for i := 1; i < len(ans); i += 2 {
+		for j, k := 0, len(ans[i])-1; j < i; j, k = j+1, k-1 {
+			ans[i][j], ans[i][k] = ans[i][k], ans[i][j]
+		}
+	}
+	return ans
+}
+
+func getMinimumDifference(root *TreeNode) int {
+	var dfs func(root *TreeNode)
+
+	ans := math.MaxInt
+	prev := -1
+	dfs = func(root *TreeNode) {
+		if root == nil {
+			return
+		}
+		dfs(root.Left)
+		if prev != -1 && root.Val-prev < ans {
+			ans = root.Val - prev
+		}
+		prev = root.Val
+		dfs(root.Right)
+	}
+	dfs(root)
+	return ans
+}
+
+func kthSmallest(root *TreeNode, k int) int {
+	var dfs func(root *TreeNode) bool
+
+	var ans int
+	dfs = func(root *TreeNode) bool {
+		if root == nil {
+			return false
+		}
+
+		if dfs(root.Left) {
+			return true
+		}
+		k--
+		if k == 0 {
+			ans = root.Val
+			return true
+		}
+		return dfs(root.Right)
+	}
+	dfs(root)
+	return ans
+}
+
+func isValidBST(root *TreeNode) bool {
+	var dfs func(root *TreeNode) bool
+
+	first := true
+	prev := 0
+	dfs = func(root *TreeNode) bool {
+		if root == nil {
+			return true
+		}
+
+		if !dfs(root.Left) {
+			return false
+		}
+		if first {
+			first = false
+			prev = root.Val
+		} else {
+			if root.Val <= prev {
+				return false
+			}
+			prev = root.Val
+			if root.Right != nil && prev >= root.Right.Val {
+				return false
+			}
+		}
+		return dfs(root.Right)
+	}
+	return dfs(root)
 }
