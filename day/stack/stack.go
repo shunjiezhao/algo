@@ -113,9 +113,8 @@ func getLargestOutlier(nums []int) int {
 	for _, v := range nums {
 		sum += v
 	}
-	haveAns := false
 	ans := math.MinInt
-	for i, v := range nums {
+	for _, v := range nums {
 		need := sum - v
 		numMap[v]--
 		if numMap[need] > 0 {

@@ -1,6 +1,7 @@
 package stack
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -97,10 +98,10 @@ func numberOfRightTriangles(grid [][]int) int64 {
 	xLen := len(grid)
 	yLen := len(grid[0])
 
-	xHave1S := make([][1001]int, xLen + 1)
-	yHave1S := make([][1001]int, yLen + 1)
+	xHave1S := make([][1001]int, xLen+1)
+	yHave1S := make([][1001]int, yLen+1)
 	for i := 1; i <= xLen; i++ {
-		for j := 1;j <= yLen;j ++{
+		for j := 1; j <= yLen; j++ {
 			xHave1S[i][j] = xHave1S[i][j-1] + grid[i-1][j-1]
 			yHave1S[j][i] = yHave1S[j][i-1] + grid[i-1][j-1]
 		}
@@ -115,8 +116,6 @@ func numberOfRightTriangles(grid [][]int) int64 {
 	// 		fmt.Printf("yHave1S[%d列][%d行]: %d\n", j, i, yHave1S[j][i])
 	// 	}
 	// }
-
-
 
 	for x := 0; x < len(grid); x++ {
 		for y := 0; y < len(grid[x]); y++ {
@@ -138,4 +137,174 @@ func numberOfRightTriangles(grid [][]int) int64 {
 	return ans
 }
 
+func maximumTripletValue(nums []int) int64 {
+	sufMax := make([]int, len(nums))
+	sufMax[len(nums)-1] = nums[len(nums)-1]
+	for i := len(nums) - 2; i >= 0; i-- {
+		sufMax[i] = max(sufMax[i+1], nums[i])
+	}
+	max := func(a, b int64) int64 {
+		if a > b {
+			return a
+		}
+		return b
+	}
+	preMax := int64(nums[0])
+	var ans int64
+	for i, v := range nums {
+		if i == 0 || i == len(nums)-1 {
+			continue
+		}
+		ans = max(ans, int64(preMax-int64(v))*int64(sufMax[i+1]))
+		preMax = max(preMax, int64(v))
+	}
+	return ans
+}
 
+func subSort(array []int) []int {
+	if len(array) == 0 {
+		return []int{-1, -1}
+	}
+	type data struct {
+		index int
+		value int
+	}
+	min := func(a, b int) int {
+		if a < b {
+			return a
+		}
+		return b
+	}
+	stack := []data{{index: -1, value: math.MinInt}}
+	tt := 0
+	start := math.MaxInt
+	end := -1
+	for i, v := range array {
+		if v >= stack[tt].value {
+			stack = append(stack, data{index: i, value: v})
+			tt++
+			continue
+		}
+		// lastIndex := stack[tt].index
+		j := tt
+		for j > 0 && v < stack[j].value {
+			// fmt.Printf("i: %d, v: %d, lastIndex: %d, array[lastIndex]: %d\n", i, v, stack[j].index, array[stack[j].index])
+			j--
+		}
+		lastIndex := stack[j].index
+		// stack = append(stack, data{index: lastIndex, value: v})
+		// tt++
+
+		start = min(start, lastIndex+1)
+		end = i
+	}
+	if start == math.MaxInt {
+		start = -1
+	}
+	return []int{start, end}
+}
+
+// https://leetcode.cn/problems/number-of-boomerangs/submissions/610090832/
+// 447. 回旋镖的数量
+func numberOfBoomerangs(points [][]int) int {
+	ans := 0
+
+	for i, v := range points {
+		dis := make(map[int]int)
+		for j, vi := range points {
+			if j == i {
+				continue
+			}
+			distance := (v[0]-vi[0])*(v[0]-vi[0]) + (v[1]-vi[1])*(v[1]-vi[1])
+			dis[distance]++
+		}
+		for j, vi := range points {
+			if j == i {
+				continue
+			}
+			distance := (v[0]-vi[0])*(v[0]-vi[0]) + (v[1]-vi[1])*(v[1]-vi[1])
+			dis[distance]--
+			ans += dis[distance] * 2
+		}
+	}
+	return ans
+}
+
+func find132pattern(nums []int) bool {
+	n := len(nums)
+	if n < 3 {
+		return false
+	}
+	stack := []int{
+		nums[n-1],
+	}
+	secondMax := math.MinInt
+	for i := n - 2; i >= 0; i-- {
+		if nums[i] < secondMax {
+			return true
+		}
+		// 找到,逆序对, 然后更新k能取的最大值
+		for len(stack) > 0 && nums[i] > stack[len(stack)-1] {
+			secondMax = stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+		}
+		stack = append(stack, nums[i])
+	}
+	return false
+}
+
+func countPairsOfConnectableServers(edges [][]int, signalSpeed int) []int {
+	n := len(edges) + 1
+	type data struct {
+		idx   int
+		value int
+	}
+	grid := make([][]data, n)
+	for _, edge := range edges {
+		grid[edge[0]] = append(grid[edge[0]], data{idx: edge[1], value: edge[2]})
+		grid[edge[1]] = append(grid[edge[1]], data{idx: edge[0], value: edge[2]})
+	}
+	var dfs func(cur int, father int, dis int, ans int) int
+	dfs = func(cur int, father int, dis int, ans int) int {
+		if dis%signalSpeed == 0 {
+			ans++
+		}
+		// fmt.Printf("cur: %d, father: %d, dis: %d, ans: %d\n", cur, father, dis, ans)
+
+		for _, v := range grid[cur] {
+			if v.idx == father {
+				continue
+			}
+			ans = dfs(v.idx, cur, dis+v.value, ans)
+		}
+		// fmt.Printf("return cur: %d, father: %d, dis: %d, ans: %d\n", cur, father, dis, ans)
+		return ans
+	}
+	ansList := make([]int, n)
+
+	for i := 0; i < n; i++ {
+		// 当前是 c
+		if len(grid[i]) < 2 {
+			ansList[i] = 0
+			continue
+		}
+		cnt := []int{}
+		for _, v := range grid[i] {
+			val := dfs(v.idx, i, v.value, 0)
+			if val != 0 {
+				cnt = append(cnt, val)
+				fmt.Printf("i: %d, v.idx: %d, cnt: %d\n", i, v.idx, val)
+			}
+		}
+		ans := 0
+		for i, v := range cnt {
+			for j := i + 1; j < len(cnt); j++ {
+				ans += v * cnt[j]
+			}
+		}
+
+		ansList[i] = ans
+
+	}
+	return ansList
+}
